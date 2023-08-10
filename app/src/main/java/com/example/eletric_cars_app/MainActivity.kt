@@ -48,7 +48,6 @@ class MainActivity : AppCompatActivity() {
     private fun onTapCalculateButton() {
         buttonCalculate.setOnClickListener {
             val result = calculate()
-            Log.d("Deu erro", "$result")
             if (result != null) {
                 calculateResult.text = "Resultado é: R$ ${DecimalFormat("#.##").format(result)}"
             } else {
