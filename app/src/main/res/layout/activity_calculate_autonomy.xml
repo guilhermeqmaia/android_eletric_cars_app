@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ImageView
+        android:id="@+id/ic_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/close_icon" />
+
+    <TextView
+        android:id="@+id/tv_page_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Calcular Autonomia"
+        app:layout_constraintTop_toBottomOf="@id/ic_close"
+        android:layout_marginTop="8dp"
+        style="@style/TextAppearance.MaterialComponents.Headline4"
+        android:textColor="@color/black"
+        />
+
+    <EditText
+        android:id="@+id/et_price_kwh"
+        app:layout_constraintTop_toBottomOf="@id/tv_page_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/preco_kwh"
+        android:inputType="numberDecimal"
+        android:maxLength="10"
+        />
+
+    <EditText
+        android:layout_marginTop="4dp"
+        android:id="@+id/et_km_percorrido"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/et_price_kwh"
+        android:hint="@string/run_km"
+        android:maxLength="10"
+        android:inputType="numberDecimal"
+        />
+
+    <TextView
+        android:id="@+id/tv_result"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/et_km_percorrido"
+        android:layout_marginTop="16dp"
+        />
+
+    <Button
+        android:id="@+id/btn_calculate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/calculate"
+        android:textSize="18dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
