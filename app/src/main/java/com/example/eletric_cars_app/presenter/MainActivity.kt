@@ -9,11 +9,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.eletric_cars_app.R
+import com.example.eletric_cars_app.data.CarFactory
 import com.example.eletric_cars_app.presenter.adapter.CarAdapter
 
 class MainActivity : AppCompatActivity() {
     lateinit var buttonCalculate : Button
     lateinit var carsList : RecyclerView
+    val carFactory = CarFactory()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -33,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListViewData() {
-        val data = arrayOf("Cupcake", "Donut", "Froyo", "Gingerbread", "Honeycomb", "Ice Cream Sandwich", "Jelly Bean")
+        val data = carFactory.list
         val carAdapter = CarAdapter(data)
         carsList.adapter = carAdapter
 
