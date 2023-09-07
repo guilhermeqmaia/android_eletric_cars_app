@@ -9,4 +9,6 @@
     <string name="preco_kwh">Preço Kw/h</string>
     <string name="run_km">Km Percorrido</string>
     <string name="calculate">Calcular</string>
+    <string name="connectionUnavailable">Ops, conexão não disponível</string>
+    <string name="retry_text">Tentar novamente</string>
 </resources>
