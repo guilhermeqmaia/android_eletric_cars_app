@@ -11,4 +11,5 @@
     <string name="calculate">Calcular</string>
     <string name="connectionUnavailable">Ops, conexão não disponível</string>
     <string name="retry_text">Tentar novamente</string>
+    <string name="response_error">Algo deu errado, por favor, tente novamente mais tarde</string>
 </resources>

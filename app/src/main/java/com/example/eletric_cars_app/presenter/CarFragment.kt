@@ -16,16 +16,26 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.eletric_cars_app.R
 import com.example.eletric_cars_app.data.CarFactory
+import com.example.eletric_cars_app.data.CarsAPI
+import com.example.eletric_cars_app.data.mappers.CarMapper
 import com.example.eletric_cars_app.domain.Car
 import com.example.eletric_cars_app.presenter.adapter.CarAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.gson.Gson
 import org.json.JSONArray
 import org.json.JSONObject
 import org.json.JSONTokener
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -40,6 +50,7 @@ class CarFragment : Fragment() {
     lateinit var emptyStateImage : ImageView
     lateinit var emptyStateText : TextView
     lateinit var emptyStateRetryButton: Button
+    lateinit var carsApi : CarsAPI
     var carsArray :  ArrayList<Car> = ArrayList()
 
 
@@ -54,15 +65,48 @@ class CarFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupView(view)
-        setupListViewData()
-        onTapCalculateButton()
+        setupRetrofit()
+        setupListeners()
         execute(view.context)
     }
 
-    private fun execute(context: Context) {
+    override fun onResume() {
+        super.onResume()
+        execute(context)
+    }
+
+    private fun setupRetrofit() {
+        val gson = Gson().newBuilder()
+            .registerTypeAdapter(Car::class.java, CarMapper())
+            .create()
+
+        val builder = Retrofit.Builder()
+            .baseUrl("https://igorbag.github.io/cars-api/")
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+
+        carsApi = builder.create()
+    }
+
+    private fun getAllCars() {
+        val cars = carsApi.getAllCars().enqueue(object: Callback<List<Car>>{
+            override fun onResponse(call: Call<List<Car>>, response: Response<List<Car>>) {
+                if(response.isSuccessful) {
+                    response.body()?.let {setupListViewData(it) }
+                    onSuccessState()
+                } else {
+                    Toast.makeText(context, R.string.response_error, Toast.LENGTH_LONG).show()
+                }
+            }
+
+            override fun onFailure(call: Call<List<Car>>, t: Throwable) = Toast.makeText(context, R.string.response_error, Toast.LENGTH_LONG).show()
+        })
+    }
+
+    private fun execute(context: Context?) {
         val isConnected = isInternetOn(context)
         if(isConnected) {
-            GetCarInformation().execute("https://igorbag.github.io/cars-api/cars.json")
+            getAllCars()
             onExecute()
         } else onEmptyState()
     }
@@ -81,6 +125,7 @@ class CarFragment : Fragment() {
         emptyStateImage.visibility = View.VISIBLE
         emptyStateText.visibility = View.VISIBLE
         emptyStateRetryButton.visibility = View.VISIBLE
+        carsArray.clear()
     }
 
     private fun onSuccessState() {
@@ -101,12 +146,12 @@ class CarFragment : Fragment() {
         emptyStateRetryButton = view.findViewById(R.id.btn_retry)
     }
 
-    private fun setupListViewData() {
-        val carAdapter = CarAdapter(carsArray)
+    private fun setupListViewData(cars: List<Car>) {
+        val carAdapter = CarAdapter(cars)
         carsList.adapter = carAdapter
     }
 
-    private fun onTapCalculateButton() {
+    private fun setupListeners() {
         fabCalculate.setOnClickListener {
            startActivity(Intent(context, CalculateAutonomyActivity::class.java))
         }
@@ -131,69 +176,6 @@ class CarFragment : Fragment() {
             val networkInfo = connectivityManager.activeNetworkInfo?: return false
             @Suppress("DEPRECATION")
             return networkInfo.isConnected()
-        }
-    }
-
-    inner class GetCarInformation : AsyncTask<String, String, String>() {
-
-        override fun doInBackground(vararg url: String?): String {
-            var urlConnection : HttpURLConnection? = null
-            try {
-                val urlBase = URL(url[0])
-                urlConnection = urlBase.openConnection() as HttpURLConnection
-                urlConnection.connectTimeout = 60000
-                urlConnection.readTimeout = 60000
-                urlConnection.setRequestProperty("Accept", "application/json")
-
-                val responseCode = urlConnection.responseCode
-
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    var response = urlConnection.inputStream.bufferedReader().use { it.readText() }
-                    publishProgress(response)
-                } else {
-                    Log.e("Erro", "Serviço indisponível no momento")
-                }
-            } catch (exception : Exception) {
-                Log.e("Error on Do In Background", exception.message.toString())
-            } finally {
-                urlConnection?.disconnect()
-            }
-
-            return ""
-        }
-
-        override fun onProgressUpdate(vararg values: String?) {
-            try {
-                val jsonArray = JSONTokener(values[0]).nextValue() as JSONArray
-
-                for (i in 0 until jsonArray.length()) {
-                    val id = jsonArray.getJSONObject(i).getString("id")
-                    val price = jsonArray.getJSONObject(i).getString("preco")
-                    val battery = jsonArray.getJSONObject(i).getString("bateria")
-                    val power = jsonArray.getJSONObject(i).getString("potencia")
-                    val recharge = jsonArray.getJSONObject(i).getString("recarga")
-                    val urlPhoto = jsonArray.getJSONObject(i).getString("urlPhoto")
-
-
-                    val model = Car(
-                            id=id.toInt(),
-                            price = price,
-                            battery = battery,
-                            power = power,
-                            recharge = recharge,
-                            photoUrl = urlPhoto,
-                        )
-
-                    carsArray.add(model)
-                }
-
-
-            } catch (ex: Exception) {
-                Log.e("Error", ex.message.toString())
-            } finally {
-                setupListViewData()
-                onSuccessState()
-            }
         }
     }
 }
