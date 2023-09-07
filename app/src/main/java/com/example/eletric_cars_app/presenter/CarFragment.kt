@@ -1,6 +1,7 @@
 package com.example.eletric_cars_app.presenter
 
 import android.content.Intent
+import android.opengl.Visibility
 import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
@@ -8,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.eletric_cars_app.R
@@ -28,6 +30,7 @@ class CarFragment : Fragment() {
 
     lateinit var fabCalculate : FloatingActionButton
     lateinit var carsList : RecyclerView
+    lateinit var progressBar : ProgressBar
     var carsArray :  ArrayList<Car> = ArrayList()
     val carFactory = CarFactory()
 
@@ -36,7 +39,6 @@ class CarFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        GetCarInformation().execute("https://igorbag.github.io/cars-api/cars.json")
         return inflater.inflate(R.layout.car_fragment, container, false)
     }
 
@@ -45,11 +47,18 @@ class CarFragment : Fragment() {
         setupView(view)
         setupListViewData()
         onTapCalculateButton()
+        execute()
+    }
+
+    private fun execute() {
+        GetCarInformation().execute("https://igorbag.github.io/cars-api/cars.json")
+        progressBar.visibility = View.VISIBLE
     }
 
     private fun setupView(view: View) {
         fabCalculate = view.findViewById(R.id.fab_calculate)
         carsList = view.findViewById(R.id.rv_cars_list)
+        progressBar = view.findViewById(R.id.pb_loader)
     }
 
     private fun setupListViewData() {
@@ -65,9 +74,6 @@ class CarFragment : Fragment() {
 
     inner class GetCarInformation : AsyncTask<String, String, String>() {
 
-        override fun onPreExecute() {
-            Log.d("MyTask", "Hello")
-        }
         override fun doInBackground(vararg url: String?): String {
             var urlConnection : HttpURLConnection? = null
             try {
@@ -75,9 +81,16 @@ class CarFragment : Fragment() {
                 urlConnection = urlBase.openConnection() as HttpURLConnection
                 urlConnection.connectTimeout = 60000
                 urlConnection.readTimeout = 60000
+                urlConnection.setRequestProperty("Accept", "application/json")
 
-                var response = urlConnection.inputStream.bufferedReader().use { it.readText() }
-                publishProgress(response)
+                val responseCode = urlConnection.responseCode
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    var response = urlConnection.inputStream.bufferedReader().use { it.readText() }
+                    publishProgress(response)
+                } else {
+                    Log.e("Erro", "Serviço indisponível no momento")
+                }
             } catch (exception : Exception) {
                 Log.e("Error on Do In Background", exception.message.toString())
             } finally {
@@ -117,8 +130,13 @@ class CarFragment : Fragment() {
                 Log.e("Error", ex.message.toString())
             } finally {
                 setupListViewData()
+                onEndRequest()
             }
         }
+    }
 
+    private fun onEndRequest() {
+        progressBar.visibility = View.GONE
+        carsList.visibility = View.VISIBLE
     }
 }
