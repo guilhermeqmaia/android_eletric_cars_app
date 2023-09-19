@@ -1,5 +1,6 @@
 package com.example.eletric_cars_app.presenter
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -19,9 +20,14 @@ class CalculateAutonomyActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calculate_autonomy)
-
         setupView()
         setupListeners()
+        setupCachedResult()
+    }
+
+    private fun setupCachedResult() {
+        val calcValue = getSharedPref()
+        result.text = calcValue.toString()
     }
 
     private fun setupView() {
@@ -44,12 +50,26 @@ class CalculateAutonomyActivity : AppCompatActivity() {
     private fun calculate() {
         val price = price.text.toString().toFloat()
         val km = runnedDistance.text.toString().toFloat()
-        val product = price / km
+        val value = price / km
 
-        result.text = product.toString()
+        result.text = value.toString()
+        saveSharedPref(value)
     }
 
     private fun onClose() {
         finish()
+    }
+
+    private fun saveSharedPref(result : Float) {
+        val sharedPreferences = getPreferences(Context.MODE_PRIVATE) ?: return
+        with(sharedPreferences.edit()) {
+            putFloat(getString(R.string.saved_calc), result)
+            apply()
+        }
+    }
+
+    private fun getSharedPref() : Float {
+        val sharedPreferences = getPreferences(Context.MODE_PRIVATE)
+        return sharedPreferences.getFloat(getString(R.string.saved_calc), 0.0f)
     }
 }

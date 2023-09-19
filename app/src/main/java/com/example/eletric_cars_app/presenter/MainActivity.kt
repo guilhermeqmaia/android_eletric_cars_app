@@ -1,18 +1,9 @@
 package com.example.eletric_cars_app.presenter
 
-import android.content.Intent
 import android.os.Bundle
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.eletric_cars_app.R
-import com.example.eletric_cars_app.data.CarFactory
-import com.example.eletric_cars_app.presenter.adapter.CarAdapter
 import com.example.eletric_cars_app.presenter.adapter.TabAdapter
 import com.google.android.material.tabs.TabLayout
 

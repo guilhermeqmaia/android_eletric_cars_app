@@ -1,14 +1,13 @@
 package com.example.eletric_cars_app.presenter
 
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.opengl.Visibility
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import android.provider.BaseColumns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,27 +19,27 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.eletric_cars_app.R
-import com.example.eletric_cars_app.data.CarFactory
 import com.example.eletric_cars_app.data.CarsAPI
+import com.example.eletric_cars_app.data.local.CarRepository
+import com.example.eletric_cars_app.data.local.CarsContract
+import com.example.eletric_cars_app.data.local.CarsContract.CarEntry.COLUMN_NAME_BATTERY
+import com.example.eletric_cars_app.data.local.CarsContract.CarEntry.COLUMN_NAME_PHOTO_URL
+import com.example.eletric_cars_app.data.local.CarsContract.CarEntry.COLUMN_NAME_POWER
+import com.example.eletric_cars_app.data.local.CarsContract.CarEntry.COLUMN_NAME_PRICE
+import com.example.eletric_cars_app.data.local.CarsContract.CarEntry.COLUMN_NAME_RECHARGE
+import com.example.eletric_cars_app.data.local.CarsContract.CarEntry.TABLE_NAME
+import com.example.eletric_cars_app.data.local.CarsDbHelper
 import com.example.eletric_cars_app.data.mappers.CarMapper
 import com.example.eletric_cars_app.domain.Car
 import com.example.eletric_cars_app.presenter.adapter.CarAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
-import org.json.JSONArray
-import org.json.JSONObject
-import org.json.JSONTokener
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
-import java.io.BufferedReader
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
 
 class CarFragment : Fragment() {
 
@@ -72,7 +71,7 @@ class CarFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        execute(context)
+        getAllCars()
     }
 
     private fun setupRetrofit() {
@@ -89,7 +88,7 @@ class CarFragment : Fragment() {
     }
 
     private fun getAllCars() {
-        val cars = carsApi.getAllCars().enqueue(object: Callback<List<Car>>{
+        carsApi.getAllCars().enqueue(object: Callback<List<Car>>{
             override fun onResponse(call: Call<List<Car>>, response: Response<List<Car>>) {
                 if(response.isSuccessful) {
                     response.body()?.let {setupListViewData(it) }
@@ -148,6 +147,7 @@ class CarFragment : Fragment() {
 
     private fun setupListViewData(cars: List<Car>) {
         val carAdapter = CarAdapter(cars)
+        carAdapter.carItemListener = {CarRepository(requireContext()).saveIfNotExist(it)}
         carsList.adapter = carAdapter
     }
 
@@ -178,4 +178,6 @@ class CarFragment : Fragment() {
             return networkInfo.isConnected()
         }
     }
+
+
 }

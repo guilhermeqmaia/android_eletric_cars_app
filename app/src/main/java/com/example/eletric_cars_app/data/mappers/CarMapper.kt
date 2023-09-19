@@ -8,9 +8,7 @@ import java.lang.reflect.Type
 
 class CarMapper : JsonDeserializer<Car> {
     override fun deserialize(
-        json: JsonElement?,
-        typeOfT: Type?,
-        context: JsonDeserializationContext?
+        json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?
     ): Car {
         val response = json?.asJsonObject
         val id = response?.get("id")?.asInt ?: 0
@@ -21,7 +19,7 @@ class CarMapper : JsonDeserializer<Car> {
         val urlPhoto = response?.get("urlPhoto")?.asString ?: ""
 
         return Car(
-            id, price, battery, power, recharge, urlPhoto,
+            null, price, battery, power, recharge, urlPhoto, id.toString(),
         )
     }
 }
